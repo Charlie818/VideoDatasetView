@@ -1,0 +1,71 @@
+{% load static %}
+ 
+
+<!doctype html>
+<html>
+<head>
+    <title>Dataset Preview</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+    <!-- <link href="{% static 'css/video-js.min.css' %}" rel="stylesheet"> -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/demo.css' %}"/>
+    <script type="text/javascript" src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
+    <!-- <script type="text/javascript" src="{% static 'js/video.min.js' %}"></script> -->
+    <script type="text/javascript" src="{% static 'js/demo.js' %}"></script>
+    <!-- <script>videojs.options.flash.swf = "{% static 'js/video-js.swf'%}";</script> -->
+</head>
+<body>
+    <header  class="main-header myheader">
+        <div class="container" align="left" >
+        <div class="span12">
+            <font class="myfont"> 
+            <p align="center">Dataset Preview</p>
+            </font>
+        </div>
+        </div>
+    </header>
+    <div class="container" align="left">
+    <div class="row">
+        <div class="span2" align="left">
+            <ul id="list" class="mylist">
+            <p>File List </p>   
+            </ul>
+        </div>
+        <div id="video" class="span10">
+        <video id='my-video' width="700" height="500" controls="controls">
+            <source id="v1" src="" type="video/mp4">
+            <object id="v2" data="" >
+                <embed id="v3" src="" />
+            </object>
+        </video>
+        <div class="span8" align="center"><label id='title' >test  </label> </div>
+        <canvas id='myCanvas' class='mycanvas'></canvas>
+        </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+    var data={{data|safe}};
+    var list=$('#list');
+    for(var i=0;i<data.length;i++){
+        list.append("<li class='smallfont'>"+data[i]['name']+"</li>");
+    }
+    var url='/static/'+data[0]['url'];
+    $("#v1").attr("src",url);
+    $("#v2").attr("data",url);
+    $("#v3").attr("src",url);
+    $("#title").text(data[0]['name']);
+    paint(data[0]['proposals'],data[0]['duration']);
+</script>
+
+<script type="text/javascript">
+    window.onload = function(){
+    var obj_lis = document.getElementById("list").getElementsByTagName("li");
+    for(i=0;i<obj_lis.length;i++){
+        obj_lis[i].onclick = function(){
+            video_request(this.innerHTML);
+        }
+    }
+}
+</script>
+</html>

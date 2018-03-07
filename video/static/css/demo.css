@@ -1,0 +1,21 @@
+.myheader{
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+.myfont{
+    font-size:30px;
+    color: black;
+}
+.smallfont{
+    font-size: 20px;
+}
+.mylist{
+    margin-top: 50px;
+    font-size: 15px;
+}
+.mycanvas{
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-top: 50px;
+}
