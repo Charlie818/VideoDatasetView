@@ -10,14 +10,14 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'css/demo.css' %}"/>
     <script type="text/javascript" src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
-    <!-- <script type="text/javascript" src="{% static 'js/video.min.js' %}"></script> -->
     <script type="text/javascript" src="{% static 'js/demo.js' %}"></script>
-    <!-- <script>videojs.options.flash.swf = "{% static 'js/video-js.swf'%}";</script> -->
+    <link rel="stylesheet" href="{% static 'css/jPages.css' %}">
+    <script src="{% static 'js/jPages.js' %}"></script>
 </head>
 <body>
-    <header  class="main-header myheader">
+    <header  class="main-header">
         <div class="container" align="left" >
-        <div class="span12">
+        <div class="span12" style="margin-top:20px;margin-bottom:20px;">
             <font class="myfont"> 
             <p align="center">Dataset Preview</p>
             </font>
@@ -25,23 +25,16 @@
         </div>
     </header>
     <div class="container" align="left">
-    <div class="row">
-        <div class="span2" align="left">
-            <ul id="list" class="mylist">
-            <p>File List </p>   
-            </ul>
+        <div class="span3" align="left">
+            <h3 style="margin:0px;">File List </h3>
+            <p style="margin:0px;">click to switch</p>
+            <ul id="list" class="mylist"></ul>
+            <div class="holder"></div>
+            <h3 style="margin:0px;">Annotation </h3>
+            <p style="margin:0px;">double click colored lines</p>
+            <textarea id="annotation" class="form-control" style="height:100px;" readonly="true"></textarea>
         </div>
-        <div id="video" class="span10">
-        <video id='my-video' width="700" height="500" controls="controls">
-            <source id="v1" src="" type="video/mp4">
-            <object id="v2" data="" >
-                <embed id="v3" src="" />
-            </object>
-        </video>
-        <div class="span8" align="center"><label id='title' >test  </label> </div>
-        <canvas id='myCanvas' class='mycanvas'></canvas>
-        </div>
-        </div>
+        <div id="video" class="span8" align="left" style="margin:20px;"></div>
     </div>
 </body>
 <script type="text/javascript">
@@ -50,12 +43,28 @@
     for(var i=0;i<data.length;i++){
         list.append("<li class='smallfont'>"+data[i]['name']+"</li>");
     }
-    var url='/static/'+data[0]['url'];
-    $("#v1").attr("src",url);
-    $("#v2").attr("data",url);
-    $("#v3").attr("src",url);
-    $("#title").text(data[0]['name']);
-    paint(data[0]['proposals'],data[0]['duration']);
+    $("div.holder").jPages({
+        containerID : "list",
+        perPage : 15,
+        previous:"←",
+        next:"→"
+    });
+
+    data=data[0];
+    var url='/static/'+data['url'];
+    //change the whole object to refresh the video
+    var video = document.getElementById("video");
+    var html_str="<video id='my-video' width='600' height='400' controls='controls'>";
+    html_str+="<source id='v1' src="+url+" type='video/mp4'>";
+    html_str+="<object id='v2' data="+url+" >";
+    html_str+="<embed id='v3' src="+url+" />";
+    html_str+="</object>";
+    html_str+="</video>";
+    html_str+="<div class='span8' align='center'><label id='title' >"+data['name']+"  </label> </div>";
+    html_str+="<canvas id='myCanvas' class='mycanvas'></canvas>"
+    // console.log(html_str);
+    video.innerHTML=html_str; 
+    paint(data['proposals'],data['duration']);
 </script>
 
 <script type="text/javascript">
