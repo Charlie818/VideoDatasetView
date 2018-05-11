@@ -19,9 +19,9 @@ format:
             "annotation":
             }
         ]
-
     }
 }
+
 Note that name,path and duration are not necessary for result.json 
 
 ### Functionality
