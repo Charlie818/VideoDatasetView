@@ -6,7 +6,7 @@ import json
 import os
 
 DIR=os.path.join(os.getcwd(),"static","dataset")
-JSON_FILE = os.path.join(DIR, "video.json")
+JSON_FILE = os.path.join(DIR, "val.json")
 
 class Proprosal(object):
     """docstring for Proprosal"""
@@ -33,8 +33,7 @@ class Video(object):
         self.name = name
         self.proposals = proposals
         file=self.path.split('/')[-1]
-        folder=self.path.split('/')[-2]
-        self.url = os.path.join(folder+'/'+file)
+        self.url = os.path.join("dataset","links",file)
         self.duration=duration
 
     def convert(self):
@@ -58,7 +57,7 @@ def get_file_list(path, _except=[], sort=True):
 def create_json(infile,outfile):
     with open(infile, 'r') as fr:
         data=json.load(fr)
-    res=[]
+    res={}
     for video in data:
         info=data[video]
         assert len(info['timestamps'])==len(info['sentences'])
@@ -71,43 +70,44 @@ def create_json(infile,outfile):
             annotation=info['sentences'][i]
             proposals.append(Proprosal(start_time,end_time,annotation).convert())
         # if os.path.isfile(os.path.join(DIR, video+'.mp4')):
-        res.append(Video(os.path.join(DIR, video+'.mp4'),video,proposals,info['duration']).convert())
-    # p11 = Proprosal(1, 4, "P11 annotation").convert()
-    # p12 = Proprosal(3, 6, "P12 annotation").convert()
-    # p21 = Proprosal(3, 4, "P21 annotation").convert()
-    # v1 = Video(os.path.join(DIR, "test1.mp4"), "test1", [p11,p12],10).convert()
-    # v2 = Video(os.path.join(DIR, "test2.mp4"), "test2", [p21],10).convert()
-    # data = [v1, v2]
+        res[video]=Video(os.path.join(DIR, 'links', video+'.mp4'),video,proposals,info['duration']).convert()
+        # res.append(Video(os.path.join(DIR, video+'.mp4'),video,proposals,info['duration']).convert())
+
     with open(outfile, 'w') as fw:
         json.dump(res, fw)
 
 
-def load_json():
-    with open(JSON_FILE, 'r') as fr:
-        return json.load(fr)
-
-def get_video(filename,json_data):
-    ret=[i for i in json_data if i['name']==filename][0]
+def get_video(filename,groundtruth,proposals):
+    ret=groundtruth[filename]
+    predicts=proposals.get(filename,{}).get('proposal',[])
+    ret['predicts']=predicts
     return ret
 
-def create_symbolic_link(SRC_DIR):
-    files=[ x for x in os.listdir(SRC_DIR) if os.path.isfile(os.path.join(SRC_DIR, x)) and x.endswith('.mp4')]
+def create_symbolic_link(src_dir):
+    files=[ x for x in os.listdir(src_dir) if os.path.isfile(os.path.join(src_dir, x)) and x.endswith('.mp4')]
     for file in files:
-        infile=os.path.join(SRC_DIR,file)
+        infile=os.path.join(src_dir,file)
         outfile=os.path.join(DIR,file)
         str = "ln -s %s %s"%(infile,outfile)
         os.system(str)
 
+def create_sample_video(src_dir,dest_dir):
+    def video_simplify(infile,outfile):
+        str = "ffmpeg -i %s -an -s 160*120 -r 5 %s"%(infile,outfile)
+        os.system("rm %s"%(outfile))
+        os.system(str)
+    for infile in get_file_list(src_dir):
+        filename =infile.split('/')[-1]
+        outfile = os.path.join(dest_dir,filename)
+        video_simplify(infile,outfile)
 
+def preprocess():
+    # create_json(infile='/data1/densevid/captions/val_1.json',outfile=JSON_FILE)
+    # create_sample_video(src_dir="/data1/densevid/videos/val",dest_dir="/root/samples/val")
+    create_symbolic_link(src_dir="/data1/qiujiarong/samples/val")
+    pass
 def main():
-    create_symbolic_link(SRC_DIR="/data1/densevid/videos/trn")
-    create_json(infile='/data1/densevid/captions/train.json',outfile=JSON_FILE)
-    # create_symbolic_link(SRC_DIR="/Users/qiujiarong/Desktop/")
-    # create_json(infile='/Users/qiujiarong/Desktop/captions/train.json',outfile=JSON_FILE)
-    
-    # json_data=load_json()
-    # print(get_video("test2",json_data))
-
+    preprocess()
 
 if __name__ == '__main__':
     main()

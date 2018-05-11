@@ -20,25 +20,28 @@ function video_request(filename) {
             html_str+="<canvas id='myCanvas' class='mycanvas'></canvas>"
             // console.log(html_str);
             video.innerHTML=html_str; 
-            paint(data['proposals'],data['duration']);
+            paint(data);
 
         }
     }); 
 }
 
-var pt=0;
-var colors=['red','orange','green','blue'];
-function get_color() {
-    if (pt==colors.length) {
-        pt=0;
-    }
-    return colors[pt++];
-}
+// var pt=0;
+// var colors=['red','green'];
+// function get_color() {
+//     if (pt==colors.length) {
+//         pt=0;
+//     }
+//     return colors[pt++];
+// }
 
-function paint(proposals,duration){
+function paint(data){
+    var proposals=data['proposals'];
+    var predicts=data['predicts'];
+    var duration=data['duration'];
     pt=0;
-    var width=335;
-    var height=400;
+    var width=400;
+    var height=600;
     var span=25;
     var lines_y= new Array();
     $('#myCanvas').attr('width',600);
@@ -56,13 +59,30 @@ function paint(proposals,duration){
     context.moveTo(X1,Y);
     context.lineTo(X2,Y); 
     context.stroke();  
-    console.log(X1,X2,Y,color);
+    // console.log(X1,X2,Y,color);
     for(var i=0;i<proposals.length;i++){
         Y+=span;
         X1=proposals[i]['start_time']/duration*width;
         X2=proposals[i]['end_time']/duration*width;
-        color=get_color();
-        // console.log(X1,X2,Y,color);
+        color="red";
+        lines_y.push(Y);
+        context.beginPath();
+        context.strokeStyle=color;
+        context.lineWidth=5;
+        context.moveTo(X1,Y);
+        context.lineTo(X2,Y);
+        context.stroke(); 
+        context.font="15px Georgia";
+        // context.fillText(proposals[i]['annotation'],X1+10,Y-5);
+    }
+    
+    console.log(predicts);
+    for(var i=0;i<predicts.length;i++){
+        Y+=span;
+        X1=predicts[i]['start_time']/duration*width;
+        X2=predicts[i]['end_time']/duration*width;
+        color="green";
+        console.log(X1,X2,Y,color);
         lines_y.push(Y);
         context.beginPath();
         context.strokeStyle=color;
@@ -88,32 +108,42 @@ function paint(proposals,duration){
         }
         console.log("idx",idx);
         myVid=document.getElementById("my-video");
+        //show annotation
         if (idx!=0) {
             // alert(proposals[idx-1]['annotation']);
-            $("#annotation").val(proposals[idx-1]['annotation']);
-        }
+            if(idx<=proposals.length)
+                $("#annotation").val(proposals[idx-1]['annotation']);
+            else
+                $("#caption").val(predicts[idx-1-proposals.length]['annotation']);
+        }  
+        //switch of clip
         if (idx==0) {
             myVid.currentTime=0;
         }else{
-            myVid.currentTime=proposals[idx-1]['start_time'];
+            if(idx<=proposals.length)
+                myVid.currentTime=proposals[idx-1]['start_time'];
+            else
+                myVid.currentTime=predicts[idx-1-proposals.length]['start_time'];
+                $("#caption").val(predicts[idx-1-proposals.length]['annotation']);
+        
         }
         myVid.play();  
     });
-    $("#myCanvas").dblclick(function(e){
-        var y=Math.floor(e.pageY-$("#myCanvas").offset().top);
-        var min=999;
-        var idx=-1;
-        console.log(y);
-        for (var i = lines_y.length - 1; i >= 0; i--) {
-            if(Math.abs(lines_y[i]-y)<min){
-                idx=i;
-                min=Math.abs(lines_y[i]-y);
-            }
-        }
-        console.log("idx",idx);
-        if (idx!=0) {
-            // alert(proposals[idx-1]['annotation']);
-            $("#annotation").val(proposals[idx-1]['annotation']);
-        }
-    });
+    // $("#myCanvas").dblclick(function(e){
+    //     var y=Math.floor(e.pageY-$("#myCanvas").offset().top);
+    //     var min=999;
+    //     var idx=-1;
+    //     console.log(y);
+    //     for (var i = lines_y.length - 1; i >= 0; i--) {
+    //         if(Math.abs(lines_y[i]-y)<min){
+    //             idx=i;
+    //             min=Math.abs(lines_y[i]-y);
+    //         }
+    //     }
+    //     console.log("idx",idx);
+    //     if (idx!=0) {
+    //         // alert(proposals[idx-1]['annotation']);
+    //         $("#annotation").val(proposals[idx-1]['annotation']);
+    //     }
+    // });
 }

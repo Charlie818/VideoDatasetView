@@ -1,6 +1,5 @@
 {% load static %}
  
-
 <!doctype html>
 <html>
 <head>
@@ -30,18 +29,24 @@
             <p style="margin:0px;">click to switch</p>
             <ul id="list" class="mylist"></ul>
             <div class="holder"></div>
-            <h3 style="margin:0px;">Annotation </h3>
-            <p style="margin:0px;">double click colored lines</p>
-            <textarea id="annotation" class="form-control" style="height:100px;" readonly="true"></textarea>
+            <h4 style="margin:0px;">Annotation </h3>
+            <p style="margin:0px;">click red lines</p>
+            <textarea id="annotation" class="form-control" style="height:75px;" readonly="true"></textarea>
+            <h4 style="margin:0px;">Captions </h3>
+            <p style="margin:0px;">click green lines</p>
+            <textarea id="caption" class="form-control" style="height:75px;" readonly="true"></textarea>
         </div>
         <div id="video" class="span8" align="left" style="margin:20px;"></div>
     </div>
 </body>
 <script type="text/javascript">
-    var data={{data|safe}};
+    var data= {{data|safe}};
+    // console.log(data);
+    console.log(data['name']);
+
     var list=$('#list');
-    for(var i=0;i<data.length;i++){
-        list.append("<li class='smallfont'>"+data[i]['name']+"</li>");
+    for(var i=0;i<data['name'].length;i++){
+        list.append("<li class='smallfont'>"+data['name'][i]+"</li>");
     }
     $("div.holder").jPages({
         containerID : "list",
@@ -50,8 +55,10 @@
         next:"→"
     });
 
-    data=data[0];
-    var url='/static/'+data['url'];
+    var sample = data['sample'];
+    console.log(sample);
+
+    var url='/static/'+sample['url'];
     //change the whole object to refresh the video
     var video = document.getElementById("video");
     var html_str="<video id='my-video' width='600' height='400' controls='controls'>";
@@ -60,11 +67,11 @@
     html_str+="<embed id='v3' src="+url+" />";
     html_str+="</object>";
     html_str+="</video>";
-    html_str+="<div class='span8' align='center'><label id='title' >"+data['name']+"  </label> </div>";
+    html_str+="<div class='span8' align='center'><label id='title' >"+sample['name']+"  </label> </div>";
     html_str+="<canvas id='myCanvas' class='mycanvas'></canvas>"
     // console.log(html_str);
     video.innerHTML=html_str; 
-    paint(data['proposals'],data['duration']);
+    paint(sample);
 </script>
 
 <script type="text/javascript">
